@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人主页</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas class="vh-bg"></canvas>
+    
+    <div class="content">
+        <div class="main-container">
+            <div class="left-section">
+                <img src="Assests/头像.jpg" alt="头像" class="avatar">
+            </div>
+            <div class="center-section">
+                <div class="intro">
+                    <div class="welcome">你好, 我是 <span class="gradientText">Aze~</span></div>
+                    <div class="intro">
+                        <p id="daily-sentence">每日一言</p>
+                    </div>
+                    <div id="time-greeting">
+                        <div id="current-time"></div>
+                        <div id="greeting"></div>
+                    </div>
+                </div>
+
+                <div class="music-player">
+                    <audio id="audio-player" src="Assests/【改编版】His theme.mp3"></audio>
+                    <button id="play-pause" class="play-pause-btn">播放</button>
+                    
+                    <div class="volume-control">
+                        <button id="volume-btn" class="volume-btn">🔊</button>
+                        <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="1" class="volume-slider">
+                    </div>
+                </div>                
+
+                <div class="links">
+                        <a href="pages/音乐播放器/index.html" class="tab-link active" >音乐播放器</a>
+                        <a href="pages/Github加速下载/index.html" class="tab-link" >Github 加速下载工具</a>
+                        <a href="pages/ZIP压缩&解压缩/index.html" class="tab-link" >ZIP压缩&解压缩</a>
+
+                    <a href="tools.html" target="_blank" class="styled-btn">工具站</a>
+                </div>
+            </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        function updateTimeAndGreeting() {
+            const timeElement = document.getElementById('current-time');
+            const greetingElement = document.getElementById('greeting');
+
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+
+            timeElement.textContent = `${hours}:${minutes}:${seconds}`;
+
+            let greeting = '';
+            if (hours >= 6 && hours < 12) {
+                greeting = "*这是新的一天，你充满了希望";
+            } else if (hours >= 12 && hours < 18) {
+                greeting = "*过了一个上午了，你充满了信心";
+            } else if (hours >= 18 && hours < 24) {
+                greeting = "*现在是晚上了，你充满了快乐";
+            } else {
+                greeting = "*现在是深夜了，我的朋友，恭喜你度过了一天";
+            }
+
+            greetingElement.textContent = greeting;
+        }
+
+        const beautifulSentences = [
+            "每个人，都是一颗明亮的星星，点缀这漫长的夜，浩瀚星空。",
+            "逝去之人永远在，只是化为天上的星星而已。",
+            "It matters not what someone is born,but what they grow to be. ——Dumbledore",
+            "It is our choices,that show what we really are,far more than our abilities. ——Dumbledore",
+            "-After all this Time? -Always.",
+            "勇敢并不是一个人手中拿着枪，而是在你动手之前你已经知道自己会输，但依然会动手，而且无论如何会坚持到底。",
+            "Happiness can be found, even in the darkest of times, if one only remembers to turn on the light. ——Dumbledore",
+            "It takes a great deal of bravery to stand up to our enemies, but just as much to stand up to our friends. ——Dumbledore",
+            "To the well-organized mind, death is but the next great adventure. ——Dumbledore",
+            "Things we lose have a way of coming back to us in the end, if not always in the way we expect. ——Luna Lovegood",
+            "You sort of start thinking anything’s possible if you’ve got enough nerve. ——Ginny Weasley",
+            "We must all face the choice between what is right and what is easy. ——Dumbledore",
+            "I must not fear. Fear is the mind-killer. Fear is the little-death that brings total obliteration. ——Frank Herbert, Dune《沙丘》",
+            "Thus we never see the true state of our condition till it is illustrated to us by its contraries, nor know how to value what we enjoy, but by the want of it. ——Daniel Defoe, Robinson Crusoe《鲁滨逊漂流记》"
+        ];
+
+        window.onload = function() {
+            const randomSentence = beautifulSentences[Math.floor(Math.random() * beautifulSentences.length)];
+            const dailySentenceElement = document.getElementById('daily-sentence');
+            dailySentenceElement.textContent = randomSentence;
+
+            updateTimeAndGreeting();
+            setInterval(updateTimeAndGreeting, 1000);
+
+            const audioPlayer = document.getElementById('audio-player');
+            const playPauseBtn = document.getElementById('play-pause');
+            const volumeSlider = document.getElementById('volume-slider');
+
+            playPauseBtn.addEventListener('click', function() {
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                    playPauseBtn.textContent = '暂停';
+                } else {
+                    audioPlayer.pause();
+                    playPauseBtn.textContent = '播放';
+                }
+            });
+
+            volumeSlider.addEventListener('input', function() {
+                audioPlayer.volume = volumeSlider.value;
+            });
+
+            async function fetchUserInfo() {
+                try {
+                    const userInfoResponse = await fetch('https://api.vvhan.com/api/visitor.info');
+                    const userInfo = await userInfoResponse.json();
+                    
+                    if (userInfo.success) {
+                        fetchWeather(userInfo.ip);
+                    } else {
+                        document.getElementById('weather-info').innerHTML = '<p>获取用户信息失败</p>';
+                    }
+                } catch (error) {
+                    console.error('获取用户信息时出错:', error);
+                    document.getElementById('weather-info').innerHTML = '<p>获取用户信息失败</p>';
+                }
+            }
+
+            async function fetchWeather(ip) {
+                try {
+                    const weatherResponse = await fetch(`https://api.vvhan.com/api/weather?ip=${ip}`);
+                    const weatherData = await weatherResponse.json();
+
+                    if (weatherData.success) {
+                        displayWeather(weatherData);
+                    } else {
+                        document.getElementById('weather-info').innerHTML = '<p>获取天气信息失败</p>';
+                    }
+                } catch (error) {
+                    console.error('获取天气信息时出错:', error);
+                    document.getElementById('weather-info').innerHTML = '<p>获取天气信息失败</p>';
+                }
+            }
+
+            function displayWeather(weatherData) {
+                const weatherInfo = document.getElementById('weather-info');
+                const data = weatherData.data;
+                const air = weatherData.air;
+
+                weatherInfo.innerHTML = `
+                    <p><strong>天气：</strong> ${data.type}</p>
+                    <p><strong>温度：</strong> ${data.low} ~ ${data.high}</p>
+                    <p><strong>风向：</strong> ${data.fengxiang} (${data.fengli})</p>
+                    <p class="weather-detail"><strong>夜间天气：</strong> ${data.night.type}, ${data.night.fengxiang} (${data.night.fengli})</p>
+                `;
+            }
+            fetchUserInfo();
+        };
+    </script>
+</body>
+</html>
